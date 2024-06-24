@@ -6,7 +6,7 @@
 /*   By: arabefam <arabefam@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/24 09:34:30 by fidrandr          #+#    #+#             */
-/*   Updated: 2024/06/24 14:15:08 by arabefam         ###   ########.fr       */
+/*   Updated: 2024/06/24 16:15:36 by arabefam         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,21 +25,62 @@ void	free_ptr(t_game *data)
 	exit (1);
 }
 
-int    check_mouse(int button, int x, int y, t_pos *pos)
+void	init_img_by_id(t_game *data, int id)
 {
-	(void)pos;
+	int	i = -1;
+
+	mlx_clear_window(data->mlx, data->win);
+	while (++i < 3)
+	{
+		if (!(data->load_img = mlx_xpm_file_to_image(data->mlx, data->pos.load[id][i], &data->img_width, &data->img_height)))
+			exit (1);
+		mlx_put_image_to_window(data->mlx, data->win, data->load_img, 0, 0);
+		sleep(2);
+		mlx_destroy_image(data->mlx, data->load_img);
+		// sleep(2);
+		// printf("%d\n", i);
+	}
+}
+
+void	start_game(t_game *data, int id)
+{
+	init_img_by_id(data, id);
+	// load_screen(data, id);
+	// init_path(data, id);
+}
+
+int    check_mouse(int button, int x, int y, t_game *data)
+{
 	if ((x >= 976 && x <= 1004) && (y >= 129 && y <= 147))
+	{
+		start_game(data, 0);
 		printf("Antsiranana\n");
+	}
 	else if ((x >= 875 && x <= 907) && (y >= 253 && y <= 271))
+	{
+		// start_game(data, 1);
 		printf("Mahajanga\n");
+	}
 	else if ((x >= 933 && x <= 984) && (y >= 305 && y <= 321))
+	{
+		// start_game(data, 2);
 		printf("Toamasina\n");
+	}
 	else if ((x >= 876 && x <= 907) && (y >= 366 && y <= 383))
+	{
+		// start_game(data, 3);
 		printf("Antananarivo\n");
+	}
 	else if ((x >= 877 && x <= 913) && (y >= 470 && y <= 484))
+	{
+		// start_game(data, 4);
 		printf("Fianarantsoa\n");
+	}
 	else if ((x >= 807 && x <= 840) && (y >= 585 && y <= 601))
+	{
+		// start_game(data, 5);
 		printf("Toliara\n");
+	}
 	else
 		printf("button = %d et x = %d et y = %d\n", button, x, y);
 	return (0);
@@ -78,6 +119,9 @@ void	init_var(t_game *data)
 		data->pos.x1[i] = 0;
 		data->pos.y1[i] = 0;
 	}
+	data->pos.load[0][0] = "./assets/Antsiranana/2.xpm";
+	data->pos.load[0][1] = "./assets/Antsiranana/1.xpm";
+	data->pos.load[0][2] = "./assets/Antsiranana/3.xpm";
 }
 
 int	exit_prog(t_game *data)
