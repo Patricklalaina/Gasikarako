@@ -6,30 +6,36 @@
 # include "../minilibx-linux/mlx.h"
 # include <unistd.h>
 
-typedef struct s_pos
+# define ESC 65307
+
+typedef struct s_img
 {
-	int		x[6];
-	int		y[6];
-	int		x1[6];
-	int		y1[6];
-	char	*load[6][3];
-}	t_pos;
+	void	*img_ptr;
+	char	*addr;
+	int		h;
+	int		w;
+	int		bpp;
+	int		endian;
+	int		line_len;
+}		t_img;
 
 typedef struct s_game
 {
 	void	*mlx;
 	void	*win;
-	void	*img;
-	void	*bg_img;
+	t_img	img;
+	void	*bg;
 	void	*load_img;
 	int		win_width;
 	int		win_height;
 	int		img_width;
 	int		img_height;
-	t_pos	pos;
+	char	**matrix;
 	char	*path;
+	int		s_width;
+	int		s_height;
+	char	*map[15];
 }	t_game;
 
-void	init_image(t_game *data);
 
-#endif // !DEBUG
+#endif

@@ -1,107 +1,113 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: arabefam <arabefam@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/06/24 09:34:30 by fidrandr          #+#    #+#             */
-/*   Updated: 2024/06/24 16:15:36 by arabefam         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "../include/game.h"
 
-void	free_ptr(t_game *data)
+int	mouse = 0;
+int	load = 0;
+
+int	exit_prog(t_game *data)
 {
-	if (data->img)
-		mlx_destroy_image(data->mlx, data->img);
+	if (data->img.img_ptr)
+		mlx_destroy_image(data->mlx, data->img.img_ptr);
 	if (data->win)
 		mlx_destroy_window(data->mlx, data->win);
 	if (data->mlx)
 	{
+		mlx_destroy_display(data->mlx);
 		free(data->mlx);
 	}
-	exit (1);
+	exit (0);
 }
 
-void	init_img_by_id(t_game *data, int id)
+void	start_log(t_game *data)
 {
-	int	i = -1;
-
 	mlx_clear_window(data->mlx, data->win);
-	while (++i < 3)
-	{
-		if (!(data->load_img = mlx_xpm_file_to_image(data->mlx, data->pos.load[id][i], &data->img_width, &data->img_height)))
-			exit (1);
-		mlx_put_image_to_window(data->mlx, data->win, data->load_img, 0, 0);
-		sleep(2);
-		mlx_destroy_image(data->mlx, data->load_img);
-		// sleep(2);
-		// printf("%d\n", i);
-	}
+	mlx_destroy_image(data->mlx, data->img.img_ptr);
+	data->img_width = 0;
+	data->img_height = 0;
+	data->img.img_ptr = mlx_xpm_file_to_image(data->mlx, "./assets/load.xpm", &data->img_width, &data->img_height);
+	if (!data->img.img_ptr)
+		exit_prog(data);
+	mlx_put_image_to_window (data->mlx, data->win, data->img.img_ptr, 0, 0);
 }
 
-void	start_game(t_game *data, int id)
+void	process_read_next(t_game *data, int *i)
 {
-	init_img_by_id(data, id);
-	// load_screen(data, id);
-	// init_path(data, id);
+	if (*i == -1)
+		*i = 1;
+	if (*i == 15)
+		return ;
+	mlx_destroy_image(data->mlx, data->img.img_ptr);
+	data->img_width = 0;
+	data->img_height = 0;
+	data->img.img_ptr = mlx_xpm_file_to_image(data->mlx, data->map[*i], &data->img_width, &data->img_height);
+	if (!data->img.img_ptr)
+		exit_prog(data);
+	mlx_put_image_to_window (data->mlx, data->win, data->img.img_ptr, 0, 0);
+	(*i)++;
+}
+
+void	process_read_prev(t_game *data, int *i)
+{
+	if (*i == 15)
+		*i = 13;
+	if (*i == -1)
+		return ;
+	mlx_destroy_image(data->mlx, data->img.img_ptr);
+	data->img_width = 0;
+	data->img_height = 0;
+	data->img.img_ptr = mlx_xpm_file_to_image(data->mlx, data->map[*i], &data->img_width, &data->img_height);
+	if (!data->img.img_ptr)
+		exit_prog(data);
+	mlx_put_image_to_window (data->mlx, data->win, data->img.img_ptr, 0, 0);
+	(*i)--;
 }
 
 int    check_mouse(int button, int x, int y, t_game *data)
 {
-	if ((x >= 976 && x <= 1004) && (y >= 129 && y <= 147))
+	static int	i = 0;
+
+	if (button && mouse == 0)
 	{
-		start_game(data, 0);
-		printf("Antsiranana\n");
+		if ((x >= 296 && x <= 480) && (y >= 470 && y <= 524))
+		{
+			load = 1;
+			mouse = 1;
+			start_log(data);
+		}
 	}
-	else if ((x >= 875 && x <= 907) && (y >= 253 && y <= 271))
+	else if (button && mouse == 1)
 	{
-		// start_game(data, 1);
-		printf("Mahajanga\n");
+		if ((x >= 1213 && x <= 1258) && (y >= 330 && y <= 392))
+			process_read_next(data, &i);
+		else if ((x >= 19 && x <= 68) && (y >= 330 && y <= 392))
+			process_read_prev(data, &i);
+		else if ((x >= 1224 && x <= 1246) && (y >= 13 && y <= 48))
+			exit_prog(data);
+		else
+			return (0);
 	}
-	else if ((x >= 933 && x <= 984) && (y >= 305 && y <= 321))
-	{
-		// start_game(data, 2);
-		printf("Toamasina\n");
-	}
-	else if ((x >= 876 && x <= 907) && (y >= 366 && y <= 383))
-	{
-		// start_game(data, 3);
-		printf("Antananarivo\n");
-	}
-	else if ((x >= 877 && x <= 913) && (y >= 470 && y <= 484))
-	{
-		// start_game(data, 4);
-		printf("Fianarantsoa\n");
-	}
-	else if ((x >= 807 && x <= 840) && (y >= 585 && y <= 601))
-	{
-		// start_game(data, 5);
-		printf("Toliara\n");
-	}
-	else
-		printf("button = %d et x = %d et y = %d\n", button, x, y);
 	return (0);
 }
 
-void	begin_program(t_game *game)
+
+int	key_check(int key, t_game *data)
 {
-	game->img_width = 0;
-	game->img_height = 0;
-	game->img = mlx_xpm_file_to_image(game->mlx, "./assets/Bg.xpm", &game->img_width, &game->img_height);
-	if (!game->img)
-		return (free_ptr(game));
-	mlx_put_image_to_window(game->mlx, game->win, game->img, (game->win_width - game->img_width) / 2, 0);
-	mlx_mouse_hook(game->win, &check_mouse, game);
+	if (key == ESC)
+		exit_prog(data);
+	return (0);
+}
+
+void init_menu(t_game *data)
+{
+	data->img.img_ptr = mlx_xpm_file_to_image(data->mlx, "./assets/bg.xpm", &data->img.w, &data->img.h);
+	if (!data->img.img_ptr)
+		exit_prog(data);
+	data->img.addr = mlx_get_data_addr(data->img.img_ptr, &data->img.bpp,
+			   &data->img.line_len, &data->img.endian);
+	mlx_put_image_to_window (data->mlx, data->win, data->img.img_ptr, (data->win_width - data->img.w) / 2, 0);
 }
 
 void	init_var(t_game *data)
 {
-	int	i;
-
-	i = -1;
 	data->win_width = 1280;
 	data->win_height = 720;
 	if (!(data->mlx = mlx_init()))
@@ -110,33 +116,21 @@ void	init_var(t_game *data)
 		exit (1);
 	data->img_width = data->win_width;
 	data->img_height = data->win_height;
-	if (!(data->bg_img = mlx_new_image(data->mlx, data->img_width, data->img_height)))
-		return (free_ptr(data));
-	while (++i < 6)
-	{
-		data->pos.x[i] = 0;
-		data->pos.y[i] = 0;
-		data->pos.x1[i] = 0;
-		data->pos.y1[i] = 0;
-	}
-	data->pos.load[0][0] = "./assets/Antsiranana/2.xpm";
-	data->pos.load[0][1] = "./assets/Antsiranana/1.xpm";
-	data->pos.load[0][2] = "./assets/Antsiranana/3.xpm";
-}
-
-int	exit_prog(t_game *data)
-{
-	if (data->img)
-		mlx_destroy_image(data->mlx, data->img);
-	if (data->bg_img)
-		mlx_destroy_image(data->mlx, data->bg_img);
-	if (data->win)
-		mlx_destroy_window(data->mlx, data->win);
-	if (data->mlx)
-	{
-		free(data->mlx);
-	}
-	exit (0);
+	data->map[0] = "./assets/1.xpm";
+	data->map[1] = "./assets/2.xpm";
+	data->map[2] = "./assets/3.xpm";
+	data->map[3] = "./assets/4.xpm";
+	data->map[4] = "./assets/5.xpm";
+	data->map[5] = "./assets/6.xpm";
+	data->map[6] = "./assets/7.xpm";
+	data->map[7] = "./assets/8.xpm";
+	data->map[8] = "./assets/9.xpm";
+	data->map[9] = "./assets/10.xpm";
+	data->map[10] = "./assets/11.xpm";
+	data->map[11] = "./assets/12.xpm";
+	data->map[12] = "./assets/13.xpm";
+	data->map[13] = "./assets/14.xpm";
+	data->map[14] = "./assets/15.xpm";
 }
 
 int	main(void)
@@ -144,7 +138,9 @@ int	main(void)
 	t_game	data;
 
 	init_var(&data);
-	begin_program(&data);
-	mlx_hook(data.win, 17, 0, &exit_prog, &data);
+	init_menu(&data);
+	mlx_mouse_hook(data.win, &check_mouse, &data);
+	mlx_hook(data.win, 17, 0, exit_prog, &data);
+	mlx_key_hook(data.win, key_check, &data);
 	mlx_loop(data.mlx);
 }
